@@ -376,7 +376,7 @@
       <h2 id="h-char">キャラ設定 <span class="tag">TARGET</span></h2>
 
       <div class="field">
-        <label class="fname" for="usc">必殺チャージ消費（USC）</label>
+        <label class="fname" for="usc">必殺チャージ消費</label>
         <div class="preset-row" id="uscPresets" role="group" aria-label="必殺チャージ消費プリセット"></div>
         <input type="number" id="usc" value="100" min="1" max="500" step="1">
       </div>
@@ -411,7 +411,7 @@
     </section>
 
     <section class="panel" aria-labelledby="h-pin">
-      <h2 id="h-pin">回数から逆算 <span class="tag">ROTATION → USG</span></h2>
+      <h2 id="h-pin">回数から逆算 <span class="tag">REVERSE CALC</span></h2>
       <div class="pair">
         <div class="field">
           <label class="fname" for="pinNsc">戦技の回数 n</label>
@@ -489,12 +489,12 @@
     </section>
 
     <section class="panel" aria-labelledby="h-usg">
-      <h2 id="h-usg">手持ちの回復効率 <span class="tag">YOUR USG</span></h2>
+      <h2 id="h-usg">手持ちの回復効率 <span class="tag">EFFICIENCY</span></h2>
       <div class="field">
         <span class="fname">数値の表記</span>
         <div class="radio-row">
           <label><input type="radio" name="rep" value="status" checked>ステータス表記（素の100%込み。画面の値をそのまま使う）</label>
-          <label><input type="radio" name="rep" value="add">加算分のみ（Wikiの最小USG表と同じ表記）</label>
+          <label><input type="radio" name="rep" value="add">加算分のみ（攻略Wikiの表と同じ表記）</label>
         </div>
       </div>
       <div class="field">
@@ -526,8 +526,8 @@
     </div>
 
     <div class="notes">
-      <p>チャージの基本式（NSC = パーティ全員の戦技回数、CSC = 対象キャラの連携技回数）:</p>
-      <div class="formula">(戦技量 × NSC + 連携量 × CSC + c) × (1 + 回復効率 × 0.01) ≥ 必殺チャージ消費 × (1 − a × 0.01)</div>
+      <p>チャージの基本式（戦技回数はパーティ全員ぶん、連携回数は必殺を撃つキャラ自身のぶん）:</p>
+      <div class="formula">(戦技量 × 戦技回数 + 連携量 × 連携回数 + c) × (1 + 回復効率 × 0.01) ≥ 必殺チャージ消費 × (1 − a × 0.01)</div>
       <p>表の値は「そのセルの回数で必殺技が撃てるようになる最低限の回復効率（％・小数第2位切り上げ）」。
       表の値のあいだの回復効率はゲーム上すべて同じ効果で、<b>次のセルの値を超えない強化は無意味</b>。
       攻撃系スキルは敵に命中しないとチャージされない点、カウンター型戦技は反撃発生まで満額入らない点に注意。</p>
@@ -635,8 +635,8 @@
     }
 
     // ---- 表 ----
-    var thead = "<tr><th scope=\"col\">NSC＼CSC</th>";
-    for (c = 0; c <= maxCsc; c++) thead += "<th scope=\"col\">" + c + "</th>";
+    var thead = "<tr><th scope=\"col\">戦技＼連携</th>";
+    for (c = 0; c <= maxCsc; c++) thead += "<th scope=\"col\">連携" + c + "回</th>";
     thead += "</tr>";
     $("usgTable").tHead.innerHTML = thead;
 
@@ -662,7 +662,7 @@
     }
     $("usgTable").tBodies[0].innerHTML = rows.join("");
 
-    var capText = "最小USG表（" + (p.offset === 100 ? "ステータス表記・素の100%込み" : "加算分のみ表記") + "）：必殺チャージ消費 " + p.usc +
+    var capText = "必要な回復効率の一覧（" + (p.offset === 100 ? "ステータス表記・素の100%込み" : "加算分のみ表記") + "）：必殺チャージ消費 " + p.usc +
       (p.subtr > 0 ? "（−" + p.subtr + "% 適用で実質 " + fmt1(tempCost) + "）" : "") +
       "。行=パーティ全員の戦技回数、列=対象キャラの連携技回数。";
     if (haveUsg) capText += " 緑=あなたの回復効率 " + fmt1(disp(p.usg)) + "% で到達可能（判定マージン +" + p.margin + "）。濃緑=各列の最短。";
@@ -681,7 +681,7 @@
 
     if (haveUsg) {
       var b0 = (bestNsc[0] !== undefined) ? "戦技" + bestNsc[0] + "<small>回</small>" : "&mdash;";
-      cards += "<div class=\"stat\"><span class=\"k\">あなたのUSGで連携0回のとき</span><span class=\"v\">" + b0 + "</span></div>";
+      cards += "<div class=\"stat\"><span class=\"k\">あなたの効率で連携0回のとき</span><span class=\"v\">" + b0 + "</span></div>";
     }
     $("readout").innerHTML = cards;
 
