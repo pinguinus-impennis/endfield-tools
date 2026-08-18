@@ -7,6 +7,7 @@
 <body>
 <title>必殺チャージ計算機</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@900&display=swap');
   :root {
     --bg: #eef0f1;
     --surface: #ffffff;
@@ -80,18 +81,11 @@
   }
   h1 {
     margin: 0;
-    font-family: Bahnschrift, "Avenir Next Condensed", "Yu Gothic UI", sans-serif;
+    font-family: "Noto Sans JP", "Yu Gothic UI", sans-serif;
     font-size: clamp(24px, 4vw, 34px);
-    font-weight: 700;
+    font-weight: 900;
     letter-spacing: 0.02em;
     text-wrap: balance;
-  }
-  h1 .plate {
-    display: inline-block;
-    background: var(--accent-fill);
-    color: var(--accent-fill-ink);
-    padding: 4px 22px 4px 16px;
-    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
   }
 
   main {
@@ -350,7 +344,7 @@
 </style>
 
 <header class="site">
-  <h1><span class="plate">必殺チャージ計算機</span></h1>
+  <h1>必殺チャージ計算機</h1>
 </header>
 
 <main>
