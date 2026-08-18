@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<title>必殺チャージ計算機</title>
+<style>
+  :root {
+    --bg: #eef0f1;
+    --surface: #ffffff;
+    --surface2: #f6f7f8;
+    --ink: #1b1d1f;
+    --muted: #5c6368;
+    --border: #d3d7da;
+    --accent: #8a6d00;
+    --accent-fill: #f5c400;
+    --accent-fill-ink: #1b1d1f;
+    --ok-bg: #e2f0e2;
+    --ok-ink: #1e5c2a;
+    --ok-strong-bg: #2f7d3f;
+    --ok-strong-ink: #ffffff;
+    --na-ink: #a2a8ad;
+    --stripe-a: #f5c400;
+    --stripe-b: #1b1d1f;
+    --focus: #8a6d00;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141618;
+      --surface: #1d2023;
+      --surface2: #24282c;
+      --ink: #e8eaec;
+      --muted: #9aa0a6;
+      --border: #383e43;
+      --accent: #ffd21e;
+      --accent-fill: #ffd21e;
+      --accent-fill-ink: #141618;
+      --ok-bg: #1f3325;
+      --ok-ink: #8fd39c;
+      --ok-strong-bg: #2f7d3f;
+      --ok-strong-ink: #ffffff;
+      --na-ink: #565d63;
+      --stripe-a: #ffd21e;
+      --stripe-b: #141618;
+      --focus: #ffd21e;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141618;
+    --surface: #1d2023;
+    --surface2: #24282c;
+    --ink: #e8eaec;
+    --muted: #9aa0a6;
+    --border: #383e43;
+    --accent: #ffd21e;
+    --accent-fill: #ffd21e;
+    --accent-fill-ink: #141618;
+    --ok-bg: #1f3325;
+    --ok-ink: #8fd39c;
+    --ok-strong-bg: #2f7d3f;
+    --ok-strong-ink: #ffffff;
+    --na-ink: #565d63;
+    --stripe-a: #ffd21e;
+    --stripe-b: #141618;
+    --focus: #ffd21e;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Yu Gothic UI", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+    font-size: 14.5px;
+    line-height: 1.65;
+  }
+  .num { font-family: Consolas, "SF Mono", Menlo, monospace; font-variant-numeric: tabular-nums; }
+
+  header.site {
+    padding: 26px 22px 18px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    font-family: Bahnschrift, "Avenir Next Condensed", "Arial Narrow", sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  h1 {
+    margin: 4px 0 0;
+    font-family: Bahnschrift, "Avenir Next Condensed", "Yu Gothic UI", sans-serif;
+    font-size: clamp(24px, 4vw, 34px);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-wrap: balance;
+  }
+  h1 .ult { color: var(--accent); }
+  .hazard {
+    height: 6px;
+    max-width: 1200px;
+    margin: 14px auto 0;
+    background: repeating-linear-gradient(-45deg,
+      var(--stripe-a) 0 14px, var(--stripe-b) 14px 28px);
+    border-radius: 2px;
+  }
+
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 18px 22px 60px;
+    display: grid;
+    grid-template-columns: 330px minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    main { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px;
+  }
+  .panel + .panel { margin-top: 16px; }
+  .panel h2 {
+    margin: 0 0 12px;
+    font-family: Bahnschrift, "Avenir Next Condensed", "Yu Gothic UI", sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .panel h2 .tag {
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  label.fname {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .hint {
+    font-size: 11.5px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-top: 3px;
+  }
+  input[type="number"], select {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface2);
+    color: var(--ink);
+    font: inherit;
+    font-family: Consolas, "SF Mono", Menlo, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  input[type="number"]:focus-visible, select:focus-visible, button:focus-visible,
+  input[type="radio"]:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
+  }
+
+  .preset-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .preset-row button {
+    padding: 5px 11px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface2);
+    color: var(--ink);
+    font-family: Consolas, monospace;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .preset-row button[aria-pressed="true"] {
+    background: var(--accent-fill);
+    color: var(--accent-fill-ink);
+    border-color: var(--accent-fill);
+    font-weight: 700;
+  }
+
+  .radio-row { display: flex; flex-direction: column; gap: 6px; }
+  .radio-row label { display: flex; gap: 8px; align-items: baseline; font-size: 12.5px; cursor: pointer; }
+  .radio-row input { margin: 0; flex: none; transform: translateY(1px); }
+
+  details.adv { margin-top: 4px; }
+  details.adv summary {
+    cursor: pointer;
+    font-size: 12.5px;
+    color: var(--muted);
+    user-select: none;
+  }
+  details.adv[open] summary { margin-bottom: 10px; }
+
+  /* ---- results ---- */
+  .readout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .stat .k {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    display: block;
+  }
+  .stat .v {
+    font-family: Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .stat .v small { font-size: 13px; font-weight: 400; color: var(--muted); }
+  .stat.hero { border-left: 4px solid var(--accent-fill); }
+  .stat.hero .v { color: var(--accent); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 13px;
+    font-size: 12.5px;
+  }
+  .chip b { font-family: Consolas, monospace; font-variant-numeric: tabular-nums; }
+  .chip.reach { background: var(--ok-bg); color: var(--ok-ink); border-color: transparent; }
+
+  .tablewrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow-x: auto;
+  }
+  table { border-collapse: collapse; width: 100%; min-width: 560px; }
+  caption {
+    text-align: left;
+    padding: 12px 14px 4px;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  th, td {
+    padding: 6px 10px;
+    border-top: 1px solid var(--border);
+    text-align: right;
+    font-family: Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  thead th {
+    border-top: none;
+    background: var(--surface2);
+    font-family: Bahnschrift, "Yu Gothic UI", sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    text-align: right;
+  }
+  tbody th {
+    background: var(--surface2);
+    font-weight: 600;
+    text-align: left;
+  }
+  td.na { color: var(--na-ink); text-align: center; }
+  td.cap { color: var(--na-ink); text-decoration: line-through; text-decoration-thickness: 1px; }
+  td.ok { background: var(--ok-bg); color: var(--ok-ink); font-weight: 600; }
+  td.best {
+    background: var(--ok-strong-bg);
+    color: var(--ok-strong-ink);
+    font-weight: 700;
+  }
+
+  td.pin { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+  .pinout {
+    margin-top: 4px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 12px;
+    font-size: 12.5px;
+    line-height: 1.7;
+  }
+  .pinout .big {
+    font-family: Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1.4;
+  }
+  .pinout .sub { color: var(--muted); }
+  .pinout .sub b { font-family: Consolas, monospace; color: var(--ink); font-weight: 600; }
+
+  .pair { display: flex; gap: 10px; }
+  .pair .field { flex: 1; margin-bottom: 0; }
+
+  button.apply {
+    margin-top: 10px;
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    background: var(--accent-fill);
+    color: var(--accent-fill-ink);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  button.apply:hover { filter: brightness(1.05); }
+
+  .notes {
+    margin-top: 16px;
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 68ch;
+  }
+  .notes code {
+    font-family: Consolas, monospace;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0 5px;
+    color: var(--ink);
+  }
+  .notes a { color: var(--accent); }
+  .formula {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent-fill);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-family: Consolas, monospace;
+    font-size: 13px;
+    margin: 10px 0;
+    overflow-x: auto;
+    white-space: nowrap;
+    color: var(--ink);
+  }
+</style>
+
+<header class="site">
+  <span class="eyebrow">Arknights: Endfield &mdash; Ultimate Charge Planner</span>
+  <h1><span class="ult">必殺チャージ</span>計算機</h1>
+</header>
+<div class="hazard" role="presentation"></div>
+
+<main>
+  <!-- ============ 入力パネル ============ -->
+  <div>
+    <section class="panel" aria-labelledby="h-char">
+      <h2 id="h-char">キャラ設定 <span class="tag">TARGET</span></h2>
+
+      <div class="field">
+        <label class="fname" for="usc">必殺チャージ消費（USC）</label>
+        <div class="preset-row" id="uscPresets" role="group" aria-label="必殺チャージ消費プリセット"></div>
+        <input type="number" id="usc" value="100" min="1" max="500" step="1">
+      </div>
+
+      <div class="field">
+        <label class="fname" for="subtr">必要な必殺チャージ −a%（凸・能力）</label>
+        <input type="number" id="subtr" value="0" min="0" max="99" step="1">
+        <p class="hint">例: ザイヒ2凸なら 10 を入力</p>
+      </div>
+
+      <details class="adv">
+        <summary>詳細補正（返還SP・定数回復・例外キャラ）</summary>
+        <div class="field">
+          <label class="fname" for="rsp">必殺技までに消費する返還SP量 b</label>
+          <input type="number" id="rsp" value="0" min="0" step="10">
+          <p class="hint">返還SPで発動した戦技はチャージが減額される（100につき戦技1回分が無効化）</p>
+        </div>
+        <div class="field">
+          <label class="fname" for="gainConst">必殺チャージを c 回復（定数バフ）</label>
+          <input type="number" id="gainConst" value="0" min="0" step="0.5">
+        </div>
+        <div class="field">
+          <label class="fname" for="nsGain">戦技1回のチャージ量</label>
+          <input type="number" id="nsGain" value="6.5" min="0.1" step="0.5">
+        </div>
+        <div class="field">
+          <label class="fname" for="csGain">連携技1回のチャージ量</label>
+          <input type="number" id="csGain" value="10" min="0.1" step="0.5">
+          <p class="hint">アークライトの連携技は 5 など例外あり</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="panel" aria-labelledby="h-pin">
+      <h2 id="h-pin">回数から逆算 <span class="tag">ROTATION → USG</span></h2>
+      <div class="pair">
+        <div class="field">
+          <label class="fname" for="pinNsc">戦技の回数 n</label>
+          <input type="number" id="pinNsc" value="" min="0" max="60" step="1" placeholder="例: 6">
+        </div>
+        <div class="field">
+          <label class="fname" for="pinCsc">連携技の回数 m</label>
+          <input type="number" id="pinCsc" value="" min="0" max="24" step="1" placeholder="例: 1">
+        </div>
+      </div>
+      <p class="hint" style="margin:4px 0 8px">n はパーティ全員の戦技合計、m は必殺を撃ちたいキャラ自身の連携技回数</p>
+      <div class="pinout" id="pinout" hidden></div>
+    </section>
+
+    <section class="panel" aria-labelledby="h-gear">
+      <h2 id="h-gear">装備シミュ <span class="tag">GEAR</span></h2>
+      <div class="pair">
+        <div class="field">
+          <label class="fname" for="gearBody">胴</label>
+          <select id="gearBody" class="gear">
+            <option value="16.7" selected>救国胴 16.7%</option>
+            <option value="16.0">それ以外 16.0%</option>
+            <option value="13.7" data-set="ct">集成訓練胴 13.7%</option>
+            <option value="0">効率なし 0%</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="fname" for="gearArm">腕</label>
+          <select id="gearArm" class="gear">
+            <option value="27.9" selected>渡淵腕 27.9%</option>
+            <option value="26.7">それ以外 26.7%</option>
+            <option value="22.8" data-set="ct">集成訓練腕 22.8%</option>
+            <option value="0">効率なし 0%</option>
+          </select>
+        </div>
+      </div>
+      <div class="pair" style="margin-top:10px">
+        <div class="field">
+          <label class="fname" for="gearAcc1">アクセ1</label>
+          <select id="gearAcc1" class="gear">
+            <option value="33.4" selected>救国印章 33.4%</option>
+            <option value="32.0">それ以外 32.0%</option>
+            <option value="27.4" data-set="ct">集成訓練アクセ 27.4%</option>
+            <option value="0">効率なし 0%</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="fname" for="gearAcc2">アクセ2</label>
+          <select id="gearAcc2" class="gear">
+            <option value="33.4" selected>救国印章 33.4%</option>
+            <option value="32.0">それ以外 32.0%</option>
+            <option value="27.4" data-set="ct">集成訓練アクセ 27.4%</option>
+            <option value="0">効率なし 0%</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label class="fname" for="gearWpn">武器</label>
+        <select id="gearWpn" class="gear">
+          <option value="50.4">完凸カーマインヴェール 50.4%</option>
+          <option value="46.4" selected>星6 46.4%</option>
+          <option value="37.1">星5 37.1%</option>
+          <option value="0">効率なし 0%</option>
+        </select>
+      </div>
+      <div class="field" style="margin-top:10px">
+        <span class="fname">パーティバフ</span>
+        <div class="radio-row">
+          <label><input type="checkbox" id="buffGilberta">ギルベルタの素質 +7%</label>
+        </div>
+        <p class="hint">戦場に出ている間、編成中の前衛・術師・補助が対象。ステータス画面の値には含まれない</p>
+      </div>
+      <div class="pinout" id="gearOut" style="margin-top:12px"></div>
+      <button type="button" id="gearApply" class="apply">この合計を回復効率に反映</button>
+    </section>
+
+    <section class="panel" aria-labelledby="h-usg">
+      <h2 id="h-usg">手持ちの回復効率 <span class="tag">YOUR USG</span></h2>
+      <div class="field">
+        <span class="fname">数値の表記</span>
+        <div class="radio-row">
+          <label><input type="radio" name="rep" value="status" checked>ステータス表記（素の100%込み。画面の値をそのまま使う）</label>
+          <label><input type="radio" name="rep" value="add">加算分のみ（Wikiの最小USG表と同じ表記）</label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="fname" for="usg">必殺チャージの回復効率（%）</label>
+        <input type="number" id="usg" value="" min="0" step="0.1" placeholder="例: 142.3（未入力可）">
+        <p class="hint" id="usgHint">ステータス画面に表示されている値をそのまま入力</p>
+      </div>
+      <div class="field">
+        <span class="fname">入力値の出どころ（安全マージン）</span>
+        <div class="radio-row">
+          <label><input type="radio" name="margin" value="0.1" checked>ゲーム内表示の値をそのまま入力（判定に +0.1）</label>
+          <label><input type="radio" name="margin" value="0.7">装備1つずつの表示値を自前で合算（判定に +0.7）</label>
+          <label><input type="radio" name="margin" value="0">マージンなし（理論値で判定）</label>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ 結果 ============ -->
+  <div>
+    <div class="readout" id="readout"></div>
+    <div class="chips" id="chips"></div>
+    <div class="tablewrap">
+      <table id="usgTable">
+        <caption id="tableCaption"></caption>
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="notes">
+      <p>チャージの基本式（NSC = パーティ全員の戦技回数、CSC = 対象キャラの連携技回数）:</p>
+      <div class="formula">(戦技量 × NSC + 連携量 × CSC + c) × (1 + 回復効率 × 0.01) ≥ 必殺チャージ消費 × (1 − a × 0.01)</div>
+      <p>表の値は「そのセルの回数で必殺技が撃てるようになる最低限の回復効率（％・小数第2位切り上げ）」。
+      表の値のあいだの回復効率はゲーム上すべて同じ効果で、<b>次のセルの値を超えない強化は無意味</b>。
+      攻撃系スキルは敵に命中しないとチャージされない点、カウンター型戦技は反撃発生まで満額入らない点に注意。</p>
+      <p>出典: アークナイツ：エンドフィールド攻略Wiki「戦闘システム」の検証値（戦技6.5 / 連携10 / 返還SP減額式）に基づく。</p>
+    </div>
+  </div>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var EPS = 1e-9;
+  var PRESETS = [70, 80, 90, 100, 110, 120];
+
+  // 小数第2位以下を切り上げて第1位に丸める（wikiのUSG表と同じ丸め）
+  function ceil1(x) { return Math.ceil(x * 10 - EPS) / 10; }
+  function fmt1(x) { return x.toFixed(1); }
+
+  function readParams() {
+    var usgRaw = parseFloat($("usg").value);
+    var marginEl = document.querySelector('input[name="margin"]:checked');
+    var repEl = document.querySelector('input[name="rep"]:checked');
+    var offset = (repEl && repEl.value === "add") ? 0 : 100; // ステータス表記なら素の100%込み
+    return {
+      usc: parseFloat($("usc").value) || 0,
+      subtr: parseFloat($("subtr").value) || 0,
+      rsp: parseFloat($("rsp").value) || 0,
+      gainConst: parseFloat($("gainConst").value) || 0,
+      nsGain: parseFloat($("nsGain").value) || 6.5,
+      csGain: parseFloat($("csGain").value) || 10,
+      usg: isFinite(usgRaw) ? Math.max(0, usgRaw - offset) : null, // 内部は常に加算分で持つ
+      offset: offset,
+      margin: marginEl ? parseFloat(marginEl.value) : 0.1
+    };
+  }
+
+  // セル1つぶんの最小USGを返す。null = NA
+  function cellMinUsg(nsc, csc, p, tempCost) {
+    var effNsc = nsc - p.rsp / 100;           // 返還SP消費で戦技チャージが減額
+    if (effNsc < 0) return null;
+    var total = p.nsGain * effNsc + p.csGain * csc + p.gainConst;
+    if (total <= EPS) return null;
+    var usg = 100 * (tempCost / total - 1);
+    return ceil1(Math.max(0, usg));
+  }
+
+  function render() {
+    var p = readParams();
+    if (p.usc <= 0 || p.nsGain <= 0 || p.csGain <= 0) return;
+    var tempCost = p.usc * (1 - p.subtr * 0.01);
+    function disp(v) { return v + p.offset; } // 表示用（ステータス表記なら+100）
+    var cap = maxAchievable(); // 現環境の装備上限（加算分）
+
+    $("usgHint").textContent = p.offset === 100
+      ? "ステータス画面に表示されている値をそのまま入力"
+      : "装備などで加算されるぶんの合計（基礎の100%は含めない）";
+    $("usg").placeholder = p.offset === 100 ? "例: 142.3（未入力可）" : "例: 42.3（未入力可）";
+
+    var maxNsc = Math.min(60, Math.ceil(tempCost / p.nsGain - EPS));
+    var maxCsc = Math.min(24, Math.ceil(tempCost / p.csGain - EPS));
+
+    // 判定に使う実効USG（マージン分を差し引く）
+    var haveUsg = p.usg !== null;
+    var effUsg = haveUsg ? p.usg - p.margin : null;
+    function reachable(v) { return haveUsg && v !== null && v <= effUsg + EPS; }
+
+    // 回数から逆算（ピンポイント）
+    var pinN = parseInt($("pinNsc").value, 10);
+    var pinM = parseInt($("pinCsc").value, 10);
+    var hasPin = isFinite(pinN) && isFinite(pinM) && pinN >= 0 && pinM >= 0;
+    var pinBox = $("pinout");
+    if (hasPin) {
+      var pv = cellMinUsg(pinN, pinM, p, tempCost);
+      var html;
+      if (pv === null) {
+        html = "この回数ではチャージが入りません（返還SPの消費が戦技回数を上回っています）";
+      } else if (pv <= 0) {
+        html = "<span class=\"big\">効率アップ不要</span><br>" +
+          "<span class=\"sub\">戦技" + pinN + "回＋連携" + pinM + "回で素のまま必殺チャージが満タンになります</span>";
+      } else {
+        html = "<span class=\"big\">" + fmt1(disp(pv)) + "%</span> 以上が必要<br>" +
+          "<span class=\"sub\">安全マージン込みの目安 — ゲーム内表示の値なら <b>" + fmt1(disp(pv) + 0.1) +
+          "</b> 以上、装備値の自前合算なら <b>" + fmt1(disp(pv) + 0.7) + "</b> 以上</span>";
+        if (pv > cap + EPS) {
+          html += "<br><span class=\"sub\">⚠ 現環境の装備上限 <b>" + fmt1(disp(cap)) + "%</b> を超えているため、この回数では実現不可</span>";
+        }
+      }
+      pinBox.innerHTML = html;
+      pinBox.hidden = false;
+    } else {
+      pinBox.hidden = true;
+    }
+
+    // 各CSCの最小到達NSC（強調セル用）
+    var bestNsc = {};
+    var c, n, v;
+    if (haveUsg) {
+      for (c = 0; c <= maxCsc; c++) {
+        for (n = 0; n <= maxNsc; n++) {
+          v = cellMinUsg(n, c, p, tempCost);
+          if (reachable(v)) { bestNsc[c] = n; break; }
+        }
+      }
+    }
+
+    // ---- 表 ----
+    var thead = "<tr><th scope=\"col\">NSC＼CSC</th>";
+    for (c = 0; c <= maxCsc; c++) thead += "<th scope=\"col\">" + c + "</th>";
+    thead += "</tr>";
+    $("usgTable").tHead.innerHTML = thead;
+
+    var capHit = false;
+    var rows = [];
+    for (n = 0; n <= maxNsc; n++) {
+      var tds = "<th scope=\"row\">戦技" + n + "回</th>";
+      for (c = 0; c <= maxCsc; c++) {
+        v = cellMinUsg(n, c, p, tempCost);
+        var cls = [];
+        if (hasPin && pinN === n && pinM === c) cls.push("pin");
+        if (v === null) {
+          cls.push("na");
+          tds += "<td class=\"" + cls.join(" ") + "\">NA</td>";
+        } else {
+          if (reachable(v)) cls.push(bestNsc[c] === n ? "best" : "ok");
+          else if (v > cap + EPS) { cls.push("cap"); capHit = true; }
+          tds += "<td" + (cls.length ? " class=\"" + cls.join(" ") + "\"" : "") +
+            (v > cap + EPS ? " title=\"現環境の装備上限を超過\"" : "") + ">" + fmt1(disp(v)) + "</td>";
+        }
+      }
+      rows.push("<tr>" + tds + "</tr>");
+    }
+    $("usgTable").tBodies[0].innerHTML = rows.join("");
+
+    var capText = "最小USG表（" + (p.offset === 100 ? "ステータス表記・素の100%込み" : "加算分のみ表記") + "）：必殺チャージ消費 " + p.usc +
+      (p.subtr > 0 ? "（−" + p.subtr + "% 適用で実質 " + fmt1(tempCost) + "）" : "") +
+      "。行=パーティ全員の戦技回数、列=対象キャラの連携技回数。";
+    if (haveUsg) capText += " 緑=あなたの回復効率 " + fmt1(disp(p.usg)) + "% で到達可能（判定マージン +" + p.margin + "）。濃緑=各列の最短。";
+    if (capHit) capText += " 打ち消し線=現環境の装備上限 " + fmt1(disp(cap)) + "%（全部盛り＋ギルベルタ素質）でも到達不可。";
+    $("tableCaption").textContent = capText;
+
+    // ---- 読み出しカード ----
+    var cards = "";
+    cards += "<div class=\"stat hero\"><span class=\"k\">実質チャージ消費</span><span class=\"v\">" +
+      fmt1(tempCost) + "</span></div>";
+
+    // 代表値: CSC=0/1/2 の素の必要戦技回数（USG=0のとき）と、入力USGでの回数
+    var zeroNsc = Math.ceil((tempCost - p.gainConst) / p.nsGain + p.rsp / 100 - EPS);
+    cards += "<div class=\"stat\"><span class=\"k\">" + (p.offset === 100 ? "素の効率100%" : "回復効率0%") + "・連携0回のとき</span><span class=\"v\">戦技" +
+      Math.max(0, zeroNsc) + "<small>回</small></span></div>";
+
+    if (haveUsg) {
+      var b0 = (bestNsc[0] !== undefined) ? "戦技" + bestNsc[0] + "<small>回</small>" : "&mdash;";
+      cards += "<div class=\"stat\"><span class=\"k\">あなたのUSGで連携0回のとき</span><span class=\"v\">" + b0 + "</span></div>";
+    }
+    $("readout").innerHTML = cards;
+
+    // ---- CSCごとのチップ ----
+    var chips = "";
+    if (haveUsg) {
+      var shown = 0;
+      for (c = 0; c <= maxCsc && shown < 8; c++, shown++) {
+        if (bestNsc[c] !== undefined) {
+          chips += "<span class=\"chip reach\">連携<b>" + c + "</b>回 → 戦技<b>" + bestNsc[c] + "</b>回で必殺OK</span>";
+        } else {
+          chips += "<span class=\"chip\">連携<b>" + c + "</b>回 → 到達不可</span>";
+        }
+      }
+    } else {
+      chips = "<span class=\"chip\">回復効率を入力すると、到達可能なセルが緑で表示されます</span>";
+    }
+    $("chips").innerHTML = chips;
+
+    // プリセットボタンの押下状態
+    var btns = document.querySelectorAll("#uscPresets button");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].setAttribute("aria-pressed", String(parseFloat(btns[i].textContent) === p.usc));
+    }
+  }
+
+  // プリセットボタン生成
+  var wrap = $("uscPresets");
+  PRESETS.forEach(function (v) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.textContent = String(v);
+    b.addEventListener("click", function () {
+      $("usc").value = String(v);
+      render();
+    });
+    wrap.appendChild(b);
+  });
+
+  // ---- 装備シミュ ----
+  var GEAR_IDS = ["gearBody", "gearArm", "gearAcc1", "gearAcc2", "gearWpn"];
+  // 現環境で装備＋素質から到達できる回復効率の理論上限（加算分）
+  // 各部位の最大値合計と、集成訓練セット(3部位+10)を最適に使った場合の高い方
+  function maxAchievable() {
+    var base = 0, losses = [];
+    GEAR_IDS.forEach(function (id) {
+      var best = 0, ct = null;
+      var opts = $(id).options;
+      for (var i = 0; i < opts.length; i++) {
+        var v = parseFloat(opts[i].value) || 0;
+        if (v > best) best = v;
+        if (opts[i].dataset.set === "ct") ct = v;
+      }
+      base += best;
+      if (ct !== null) losses.push(best - ct);
+    });
+    var cap = base;
+    if (losses.length >= 3) {
+      losses.sort(function (a, b) { return a - b; });
+      cap = Math.max(cap, base - (losses[0] + losses[1] + losses[2]) + 10);
+    }
+    return Math.round((cap + 7) * 10) / 10; // ギルベルタ素質+7込み
+  }
+
+  function ctCount() { // 集成訓練セットの装備数
+    var n = 0;
+    GEAR_IDS.forEach(function (id) {
+      var opt = $(id).selectedOptions[0];
+      if (opt && opt.dataset.set === "ct") n++;
+    });
+    return n;
+  }
+  function gearSum() {
+    var s = 0;
+    GEAR_IDS.forEach(function (id) { s += parseFloat($(id).value) || 0; });
+    if (ctCount() >= 3) s += 10;              // 集成訓練セット効果（3部位で必殺効率+10%）
+    if ($("buffGilberta").checked) s += 7;    // ギルベルタ素質（前衛・術師・補助）
+    return Math.round(s * 10) / 10;
+  }
+  function gearRender() {
+    var s = gearSum();
+    var gil = $("buffGilberta").checked;
+    var ct = ctCount();
+    var parts = [];
+    if (ct >= 3) parts.push("集成訓練セット +10");
+    if (gil) parts.push("素質 +7");
+    var note = parts.length ? "（うち" + parts.join("／") + "）" : "";
+    if (ct === 2) note += " — 集成訓練あと1部位でセット効果+10";
+    $("gearOut").innerHTML =
+      "<span class=\"big\">" + fmt1(s + 100) + "%</span> <span class=\"sub\">（ステータス換算）</span><br>" +
+      "<span class=\"sub\">加算分合計 <b>" + fmt1(s) + "%</b>" + note +
+      " — 個別表示値の合算なので判定は +0.7 マージン推奨</span>";
+  }
+  GEAR_IDS.forEach(function (id) { $(id).addEventListener("change", gearRender); });
+  $("buffGilberta").addEventListener("change", gearRender);
+  $("gearApply").addEventListener("click", function () {
+    var repEl = document.querySelector('input[name="rep"]:checked');
+    var offset = (repEl && repEl.value === "add") ? 0 : 100;
+    $("usg").value = fmt1(gearSum() + offset);
+    var m07 = document.querySelector('input[name="margin"][value="0.7"]');
+    if (m07) m07.checked = true;
+    render();
+  });
+  gearRender();
+
+  ["usc", "subtr", "rsp", "gainConst", "nsGain", "csGain", "usg", "pinNsc", "pinCsc"].forEach(function (id) {
+    $(id).addEventListener("input", render);
+  });
+  var radios = document.querySelectorAll('input[name="margin"], input[name="rep"]');
+  for (var i = 0; i < radios.length; i++) radios[i].addEventListener("change", render);
+
+  render();
+})();
+</script>
+
+</body>
+</html>
