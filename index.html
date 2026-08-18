@@ -22,6 +22,7 @@
     --ok-strong-bg: #2f7d3f;
     --ok-strong-ink: #ffffff;
     --na-ink: #a2a8ad;
+    --marker: #f5c400;
     --focus: #8a6d00;
   }
   @media (prefers-color-scheme: dark) {
@@ -40,8 +41,7 @@
       --ok-strong-bg: #2f7d3f;
       --ok-strong-ink: #ffffff;
       --na-ink: #565d63;
-      --stripe-a: #ffd21e;
-      --stripe-b: #141618;
+      --marker: rgba(255, 210, 30, 0.35);
       --focus: #ffd21e;
     }
   }
@@ -60,6 +60,7 @@
     --ok-strong-bg: #2f7d3f;
     --ok-strong-ink: #ffffff;
     --na-ink: #565d63;
+    --marker: rgba(255, 210, 30, 0.35);
     --focus: #ffd21e;
   }
 
@@ -86,7 +87,10 @@
     font-weight: 700;
     letter-spacing: 0.02em;
     text-wrap: balance;
-    color: var(--accent);
+  }
+  h1 .mk {
+    background: linear-gradient(transparent 62%, var(--marker) 62%);
+    padding: 0 2px;
   }
 
   main {
@@ -345,7 +349,7 @@
 </style>
 
 <header class="site">
-  <h1>必殺チャージ計算機</h1>
+  <h1><span class="mk">必殺チャージ計算機</span></h1>
 </header>
 
 <main>
