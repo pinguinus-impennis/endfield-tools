@@ -22,8 +22,6 @@
     --ok-strong-bg: #2f7d3f;
     --ok-strong-ink: #ffffff;
     --na-ink: #a2a8ad;
-    --stripe-a: #f5c400;
-    --stripe-b: #1b1d1f;
     --focus: #8a6d00;
   }
   @media (prefers-color-scheme: dark) {
@@ -62,8 +60,6 @@
     --ok-strong-bg: #2f7d3f;
     --ok-strong-ink: #ffffff;
     --na-ink: #565d63;
-    --stripe-a: #ffd21e;
-    --stripe-b: #141618;
     --focus: #ffd21e;
   }
 
@@ -83,15 +79,8 @@
     max-width: 1200px;
     margin: 0 auto;
   }
-  .eyebrow {
-    font-family: Bahnschrift, "Avenir Next Condensed", "Arial Narrow", sans-serif;
-    font-size: 12px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
   h1 {
-    margin: 4px 0 0;
+    margin: 0;
     font-family: Bahnschrift, "Avenir Next Condensed", "Yu Gothic UI", sans-serif;
     font-size: clamp(24px, 4vw, 34px);
     font-weight: 700;
@@ -99,14 +88,6 @@
     text-wrap: balance;
   }
   h1 .ult { color: var(--accent); }
-  .hazard {
-    height: 6px;
-    max-width: 1200px;
-    margin: 14px auto 0;
-    background: repeating-linear-gradient(-45deg,
-      var(--stripe-a) 0 14px, var(--stripe-b) 14px 28px);
-    border-radius: 2px;
-  }
 
   main {
     max-width: 1200px;
@@ -364,10 +345,8 @@
 </style>
 
 <header class="site">
-  <span class="eyebrow">Arknights: Endfield &mdash; Ultimate Charge Planner</span>
   <h1><span class="ult">必殺チャージ</span>計算機</h1>
 </header>
-<div class="hazard" role="presentation"></div>
 
 <main>
   <!-- ============ 入力パネル ============ -->
